@@ -1,0 +1,8 @@
+pandas
+numpy
+jax
+jaxopt
+scikit-learn
+pyodbc
+chempy
+matplotlib
