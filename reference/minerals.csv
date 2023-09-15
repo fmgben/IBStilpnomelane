@@ -1,20 +1,20 @@
 mineral,gibbs,endmember,group,formula,loi371,loi650,loi1000
-magnetite,-1120.894,,,Fe3O4,,Fe2O3,
+magnetite,-1120.894,,,Fe3O4,Fe2O3,,
 quartz,-910.94,,,SiO2,,,
 siderite,-747,,carbonate,FeCO3,,Fe2O3; CO2,
 pyrite,-178.2,,,FeS2,Fe2O3; SO2,,
 chalcopyrite,-193,,,CuFeS2,Fe2O3;CuO;SO2,,
-ferrostilpnomelane,-2332,stilpnomelane,,K5Fe48(Si63Al9)O165(OH)48(H2O)12,H2O;K5Fe48(Si63Al9)O165(OH)48,K5Fe48(Si63Al9)O165;H2O,
-ferristilpnomelane,-2332,stilpnomelane,,K5Fe48(Si63Al9)O216(H2O)36,H2O;K5Fe48(Si63Al9)O216,,
-mg-ankerite,-1970.62,ankerite,carbonate,CaFe(CO3)2,,,CO2;CaO;Fe2O3
-fe-ankerite,-1970.62,ankerite,carbonate,CaMg(CO3)2,,,CO2;MgO;CaO
+ferrostilpnomelane,-2332,stilpnomelane,,K5Fe48(Si63Al9)O165(OH)48(H2O)12,,,K5Fe48(Si63Al9)O165;H2O
+ferristilpnomelane,-2332,stilpnomelane,,K5Fe48(Si63Al9)O216(H2O)36,,,H2O;K5Fe48(Si63Al9)O216
+fe-ankerite,-1970.62,ankerite,carbonate,CaFe(CO3)2,,CO2;CaO;Fe2O3,
+mg-ankerite,-1970.62,ankerite,carbonate,CaMg(CO3)2,,CO2;MgO;CaO,
 rutile,-6.65,,,TiO2,,,
 titanite,-2456.2,,,CaTi(SiO4)O,,,
 sepiolite,-9251,,,Mg4(Si6O15)(OH)2(H2O)6,,Mg4(Si6O15)(OH)2;H2O,Mg4(Si6O15);H2O
-clinochlore,-1974,chlorite,,Mg5Al(AlSi3O10)(OH)8,,Mg5Al(AlSi3O10);H2O,
-chamosite,-1974,chlorite,,Fe5Al(AlSi3O10)(OH)8,,Fe5Al(AlSi3O10);H2O,
+clinochlore,-1974,chlorite,,Mg5Al(AlSi3O10)(OH)8,Mg5Al(AlSi3O10);H2O,,
+chamosite,-1974,chlorite,,Fe5Al(AlSi3O10)(OH)8,Fe5Al(AlSi3O10);H2O,,
 talc,-1319.4,,,Mg3Si4O10(OH)2,,Mg3Si4O10;H2O,
-magnesite,-1110.93,,carbonate,MgCO3,,,MgO;CO2
+magnesite,-1110.93,,carbonate,MgCO3,MgO;CO2,,
 apatite,-846,,,CaPO4,,,
 ilmenite,-1158,,,FeTiO3,,,
 calcite,-1207.88,,carbonate,CaCO3,,,CaO;CO2
@@ -33,3 +33,7 @@ zircon,-1918,,,ZrSiO4,,,
 monazite,,,,CePO4,,,
 kaolinite,-906.84,,,Al2Si2O5(OH)4,,,Al2Si2O7;H2O
 rhodochrosite,-892.28,ankerite,,MnCO3,,MnO2;CO2,
+,,,,,,,
+,,,,,,,
+,,,,,,,
+,,,,,,,
