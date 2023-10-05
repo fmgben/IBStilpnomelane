@@ -130,22 +130,33 @@ pd.concat([minerals.mineral,solution_matrix],axis=1)
 solution_matrix[solution_matrix.isna()]=0
 
 
-assays = pd.read_csv(r'reference/compiled_xrd.csv')
+assays = pd.read_csv(r'reference/BV_XRD_Assay_Merge.csv')
+assays.columns =[c.replace(' ','_') for c in assays.columns]
 
 # compiled xrd is missing 3pt xrf
 from sklearn import linear_model
-assay_columns = ['Fe_%', 'SiO2_%', 'Al2O3_%', 'TiO2_%', 'Mn_%', 'CaO_%', 'P XRF_%',
-                'S XRF_%', 'MgO_%', 'K2O_%', 'Na2O_%', 'Zn_%', 'As_%', 'Cl_%', 'Cu_%',
-                'Pb_%', 'Ba_%', 'V_%', 'Cr_%', 'Ni_%', 'Co_%', 'Sn XRF_%', 'Zr_%',
-                'Sr_%', 'Fe3O4_%','LOI_ Total_%']
-loi_columns = ['LOI_371_%', 'LOI_650_%', 'LOI_1000_%']
+# old vs new assays columns
+v1 = False
+if v1:
+    assay_columns = ['Fe_%', 'SiO2_%', 'Al2O3_%', 'TiO2_%', 'Mn_%', 'CaO_%', 'P XRF_%',
+                    'S XRF_%', 'MgO_%', 'K2O_%', 'Na2O_%', 'Zn_%', 'As_%', 'Cl_%', 'Cu_%',
+                    'Pb_%', 'Ba_%', 'V_%', 'Cr_%', 'Ni_%', 'Co_%', 'Sn XRF_%', 'Zr_%',
+                    'Sr_%', 'Fe3O4_%','LOI_ Total_%']
+    loi_columns = ['LOI_371_%', 'LOI_650_%', 'LOI_1000_%']
+else:
+    assay_columns = ['Fe3O4', 'Fe', 'SiO2', 'Al2O3', 'TiO2', 'Mn', 'CaO', 'P_XRF', 'S_XRF', 'MgO', 'K2O', 'Na2O', 'Zn', 'As', 'Cl', 'Cu', 'Pb', 'Ba', 'V', 'Cr', 'Ni', 'Co', 'Sn_XRF', 'Zr', 'Sr']
+    loi_columns = ['LOI371', 'LOI650', 'LOI1000']
+idx = np.all(~assays[assay_columns].isna(),1)
+assays= assays[idx].reset_index()
 assay_ok = assays[loi_columns].isna().sum(1) == 0
 loi_model = linear_model.LinearRegression().fit(assays.loc[assay_ok,assay_columns], assays.loc[assay_ok,loi_columns])
 loi_hat = loi_model.predict(assays.loc[:,assay_columns])
 # predict the loi into the missing
+
 assays.loc[~assay_ok,loi_columns] = loi_hat[~assay_ok]
-idxassay = assays['Type'].isin(['Feed', np.nan])
-assays = assays[idxassay].reset_index(drop=True).copy()
+if v1:
+    idxassay = assays['Type'].isin(['Feed', np.nan])
+    assays = assays[idxassay].reset_index(drop=True).copy()
 
 mineral_pass_data = pd.read_csv(r'reference/selected_minerals.csv')
 mineral_selection = mineral_pass_data.mineral.to_list()
@@ -155,11 +166,15 @@ for i in mineral_pass_data.xrd.unique():
         idx = mineral_pass_data.xrd == i
         xrd_to_assay.update({i:mineral_pass_data[idx].mineral.to_list()})
 idx_mineral = minerals.mineral.isin(mineral_selection)
-
-column_names = {f:clean_name(f) for f in assays.columns.to_list() if f.find('%')>=0}
-clean_assays = assays[[c for c in column_names]].rename(columns=column_names)
-clean_assays.sum(1)
-clean_assays = clean_assays.iloc[:,0:24]
+if v1:
+    column_names = {f:clean_name(f) for f in assays.columns.to_list() if f.find('%')>=0}
+    clean_assays = assays[[c for c in column_names]].rename(columns=column_names)
+    clean_assays.sum(1)
+    clean_assays = clean_assays.iloc[:,0:24]
+else:
+    xrf_assays = [c for c in assay_columns if not c =='Fe3O4']
+    clean_assays = assays.loc[:,xrf_assays]
+    clean_assays.columns = [c.replace('_XRF','') for c in clean_assays.columns]
 
 
 factor_names =[ox_factor(c) for c in clean_assays.columns.to_list()]
@@ -168,8 +183,13 @@ factors = [f[2] for f in factor_names]
 elemental_assays= clean_assays*factors
 elemental_assays = elemental_assays.rename(columns=elements)
 elemental_assays[elemental_assays<0]=0
-loi = assays[['LOI_371_%', 'LOI_650_%', 'LOI_1000_%']]
-loi = loi.rename(columns={'LOI_371_%':'loi371', 'LOI_650_%':'loi650', 'LOI_1000_%':'loi1000'})
+if v1:
+    loi = assays[['LOI_371_%', 'LOI_650_%', 'LOI_1000_%']]
+    loi = loi.rename(columns={'LOI_371_%':'loi371', 'LOI_650_%':'loi650', 'LOI_1000_%':'loi1000'})
+else:
+    loi = assays[loi_columns]
+    loi.columns = [c.lower() for c in loi_columns]
+
 final_assays = pd.concat([elemental_assays,loi],axis=1) 
 final_assays[final_assays.isna()]=0
 idx_joint= final_assays.columns.isin(solution_matrix.columns)
@@ -205,11 +225,12 @@ x = final_assays[selected_columns]
 y = solution_matrix.loc[idx_mineral,selected_columns]
 # first pass at getting the bounds we are going to extract the single elements constraints and Magnetite first
 solution_matrix.to_clipboard()
-all_minerals = normative(x, solution_matrix.loc[:,selected_columns], minerals.mineral, minerals)
+all_minerals,_= normative(x, solution_matrix.loc[:,selected_columns], minerals.mineral, minerals)
 
 plt.plot(all_minerals[group_minerals['stilpnomelane']]*100,assays['Stilpnomelane'],'.' )
 plt.plot([0,100],[0,100])
 plt.show()
+
 for i in mineral_pass_data.xrd.unique():
     if isinstance(i,str):
         idxmin = mineral_pass_data.xrd == i
@@ -228,16 +249,16 @@ for i in mineral_pass_data.xrd.unique():
 plt.show()
 
 # get the limiting calculatoin for the first pass minerals
-first_pass_solution = normative(x, solution_matrix.loc[:,selected_columns], first_pass_minerals, minerals)
+first_pass_solution,_ = normative(x, solution_matrix.loc[:,selected_columns], first_pass_minerals, minerals)
 # for the grouped minerals calculate the limiting reaction individually
 # then calculate a 
 plt.plot(first_pass_solution['rutile']*100, assays['Rutile_group'],'.')
 plt.plot(first_pass_solution['sepiolite']*100, assays['Sepiolite'],'.')
 plt.show()
 
-tmp = normative(x, solution_matrix.loc[:,selected_columns],['clinochlore'],minerals)
+tmp,_ = normative(x, solution_matrix.loc[:,selected_columns],['clinochlore'],minerals)
 plt.plot( assays[['Chlorite_group']].sum(1),tmp.sum(1)*100,'.',label='clino')
-tmp = normative(x, solution_matrix.loc[:,selected_columns],['chamosite'],minerals) # apparently this is the one
+tmp,_ = normative(x, solution_matrix.loc[:,selected_columns],['chamosite'],minerals) # apparently this is the one
 plt.plot(assays[['Chlorite_group']].sum(1),tmp.sum(1)*100,'.',label='chamo')
 plt.legend()
 plt.plot([0,20],[0,20],'k')
@@ -251,31 +272,31 @@ plt.show()
 # this returns the total limited group solution
 # we probaly need to relimit the values again
 
-tmp = normative(x,  solution_matrix.loc[:,selected_columns],['albite'],minerals)
+tmp,_ = normative(x,  solution_matrix.loc[:,selected_columns],['albite'],minerals)
 plt.scatter(assays[['Plagioclase']].sum(1),tmp.sum(1)*100,c=pd.Categorical(assays['Type']).codes)
 plt.plot([0,100],[0,100],'k')
 plt.show()
 
-tmp = normative(x,  solution_matrix.loc[:,selected_columns],['orthoclase'], minerals)
+tmp,_ = normative(x,  solution_matrix.loc[:,selected_columns],['orthoclase'], minerals)
 plt.scatter(assays[['K-Feldspar']].sum(1),tmp.sum(1)*100,c=pd.Categorical(assays['Type']).codes)
 plt.plot([0,100],[0,100],'k')
 plt.show()
 
-tmp = normative(x, solution_matrix.loc[:,selected_columns],['hematite'],minerals)
+tmp,_ = normative(x, solution_matrix.loc[:,selected_columns],['hematite'],minerals)
 plt.scatter(assays[['Hematite_group']].sum(1),tmp.sum(1)*100,c=pd.Categorical(assays['Type']).codes)
 plt.plot([0,100],[0,100],'k')
 plt.show()
 
-tmp = normative(x, solution_matrix.loc[:,selected_columns],['quartz'],minerals)
+tmp,_ = normative(x, solution_matrix.loc[:,selected_columns],['quartz'],minerals)
 plt.scatter(assays[['Quartz']].sum(1),tmp.sum(1)*100,c=pd.Categorical(assays['Type']).codes)
 plt.plot([0,100],[0,100],'k')
 plt.show()
 
-tmp = normative(x,  solution_matrix.loc[:,selected_columns],group_minerals['chlorite'],minerals)
+tmp,_ = normative(x,  solution_matrix.loc[:,selected_columns],group_minerals['chlorite'],minerals)
 plt.scatter(assays[['Chlorite_group']].sum(1),tmp.sum(1)*100,c=pd.Categorical(assays['Type']).codes)
 plt.plot([0,100],[0,100],'k')
 plt.show()
-tmp = normative(x,  solution_matrix.loc[:,selected_columns],group_minerals['stilpnomelane'],minerals)
+tmp,_ = normative(x,  solution_matrix.loc[:,selected_columns],group_minerals['stilpnomelane'],minerals)
 plt.scatter(assays[['Stilpnomelane']].sum(1),tmp.sum(1)*100,c=pd.Categorical(assays['Type']).codes)
 plt.plot([0,100],[0,100],'k')
 plt.show()
@@ -284,13 +305,26 @@ plt.show()
 carbonates = group_minerals['carbonate']
 mineral_order = ['magnetite',*group_minerals['chlorite'], *group_minerals['stilpnomelane'],*first_pass_minerals, 'pyrite', 'orthoclase',*carbonates , 'quartz','goethite','hematite']
 carbonates = ['mg-ankerite', 'fe-ankerite','siderite']
-mineral_order = ['magnetite', *first_pass_minerals, 'pyrite', 'orthoclase',*carbonates,  *group_minerals['chlorite'],*group_minerals['stilpnomelane'],'quartz','goethite','hematite']
 
-fpm = ['rutile','apatite', 'chalcopyrite', 'chromite', 'zircon','rhodochrosite']
+fpm = ['titanite','apatite', 'chalcopyrite', 'chromite', 'zircon','rhodochrosite']
 
 mineral_order = ['magnetite',*fpm, 'calcite','fe-ankerite','mg-ankerite','siderite','sepiolite',*['ferrostilpnomelane']]
+
 # from original report
-mineral_order = ['magnetite','chalcopyrite','siderite','pyrite','chromite','zircon', 'rhodochrosite','apatite', 'albite','ferristilpnomelane', 'orthoclase']
+mineral_order = ['magnetite','chalcopyrite','siderite','pyrite','chromite','zircon', 'rhodochrosite','apatite', 'albite','ferristilpnomelane', 'orthoclase','quartz']
+
+# what I think
+siderite = ['siderite']
+carbonates = ['mg-ankerite','fe-ankerite','calcite']
+# slightly better order
+stilp = [ 'ferrostilpnomelane','ferristilpnomelane']
+
+stilp = [ 'ferristilpnomelane','ferrostilpnomelane']
+chlorite = ['chamosite','clinochlore']
+chlorite = ['clinochlore','chamosite']
+
+mineral_order = ['magnetite',*first_pass_minerals,*siderite,*stilp,*chlorite,*carbonates,'goethite','orthoclase','quartz','hematite']
+
 initial_solution = pd.DataFrame(np.zeros((x.shape[0],len(mineral_order))), columns=mineral_order)
 index = []
 for i in initial_solution.columns.to_list():
@@ -298,47 +332,31 @@ for i in initial_solution.columns.to_list():
 
 running_total = final_assays[selected_columns].copy()
 # add some constraints on the assay value
-i ='quartz'
+i = 'albite'
 for i in mineral_order:
     if i == 'magnetite':
-        tmp = assays['Fe3O4_%']*0.01
+        tmp = assays['Fe3O4']*0.01
         lim  = 0
     else:
         upper_bound = 1-initial_solution.sum(1)
         tmp,lim = normative(running_total, solution_matrix.loc[:,selected_columns],[i],minerals)
         idxub = tmp.values.ravel()>upper_bound.values.ravel()
         if any(idxub):
-            tmp[idxub] = upper_bound[idxub].values
+            tmp[idxub] = upper_bound[idxub].values.reshape(-1,1)
     #print(selected_columns[lim])
     initial_solution[i] = tmp
     idx_current_mineral = minerals.mineral == i
     idx_col = solution_matrix.loc[idx_current_mineral,selected_columns]!=0
-    lll = selected_columns[idx_col.values.ravel()][lim]
     running_total -= ((initial_solution[i].values.reshape(-1,1)@solution_matrix.loc[idx_current_mineral,selected_columns].values))*100
     # add some extra contraints as we go
     # 1. the upper bound cannot be more than the total
     # 2. start reducing the remaining reactants
-plt.plot(assays['LOI_371_%'])
-plt.plot(assays['LOI_650_%'])
-plt.plot(assays['LOI_1000_%'])
-plt.plot(assays['LOI_ Total_%'])
-plt.show()
 
-
-plt.scatter(assays.Stilpnomelane, initial_solution['ferristilpnomelane']*100,c=assays['Hematite_group'])
-plt.plot([0,20],[0,20])
-plt.show()
-
-
-plt.scatter(assays['K-Feldspar'],assays['Plagioclase'],c=assays['K-Feldspar'])
-plt.plot([0,20*(0.21)],[0,20])
-plt.plot([solution_matrix.K*0,solution_matrix.K*20],[solution_matrix.K*0,10+solution_matrix.K*0])
-plt.show()
 
 
 both = pd.concat([assays, initial_solution*100],axis=1)
 i ='Spinel_group'
-mm =["Hematite_group",'Quartz','K-Feldspar','Calcite_group-Siderite','Dolomite_group','Stilpnomelane','Chlorite_group','Plagioclase','Spinel_group','Sepiolite']
+mm =["Hematite_group",'Quartz','K-Feldspar','Plagioclase','Calcite_group-Siderite','Dolomite_group','Stilpnomelane','Chlorite_group','Spinel_group','Sepiolite','Mica_group','Calcite_group']
 #mm= ['Stilpnomelane']
 for n,i in enumerate(mm):
     if isinstance(i,str):
