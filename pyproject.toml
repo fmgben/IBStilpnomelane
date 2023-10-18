@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "ibstilpnomelane"
+version = "0.1.0"
+description = "Normative Mineralogy"
+authors = ["Ben Chi <benjamin.chi@fmgl.com.au>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+[tool.poetry.group.dev.dependencies]
+black
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
