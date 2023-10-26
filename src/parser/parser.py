@@ -1,12 +1,7 @@
 import pandas as pd
-import numpy as np
 import chempy
 from chempy import Substance
 from chempy.util import periodic
-from chempy import Equilibrium
-from matplotlib import pyplot as plt
-from scipy.optimize import least_squares
-from sklearn.metrics import mean_squared_error
 from typing import Union
 from pathlib import Path
 num2symbol = {p+1:n for p, n in enumerate(periodic.symbols)}
@@ -72,11 +67,16 @@ def loi_parser(reagent,products,gasses=['SO2','H2O','CO2']):
 
     return loi_value
 
-def clean_name(x):
+def clean_name(x,extranames:list[str] = None):
     """
     remove suffixes from the assay data so that the chemical parser works
     """
-    y = x.strip('_%').replace(' XRF','')
+    bad_names:list[str] = ['_%', ' XRF','_XRF','_pct_BEST','_H-STMGN_pct','_C_pct_BEST','_T_pct_BEST','_H_pct_BEST']
+    if extranames != None:
+        bad_names.extend(extranames)
+    y = x
+    for i in bad_names:
+        y = y.replace(i,'')
     return y
 
 def ox_factor(x):
