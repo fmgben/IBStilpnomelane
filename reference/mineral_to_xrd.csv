@@ -3,8 +3,9 @@ Spinel_group,magnetite
 Hematite_group,hematite
 Quartz,quartz
 Chlorite_group,chlorite
+Chlorite_group,chlorite2
 Dolomite_group,dolomite
-Calcite_group-Siderite,siderite
+Calcite_group_Siderite,siderite
 Calcite_group-Calcite,calcite
 Pyrite_group,pyrite
 Rutile_group,rutile
@@ -17,3 +18,4 @@ Smectite_group,smectite
 Sepiolite,sepiolite
 Kaolinite-serpentine_group,kaolinite
 Pyroxene,pyroxene
+

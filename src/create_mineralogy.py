@@ -88,19 +88,4 @@ for i in con_assay:
     except Exception:
         pass
 
-1300 661 508
-105 218 321 5223
-
-delta = 1e-5
-mm = mineral_matrix.values.copy()
-mm[np.isnan(mm)]=0
-U,D,V= np.linalg.svd(mm)
-U, sdiag, VH = np.linalg.svd(mm)
-S = np.zeros(mm.shape)
-np.fill_diagonal(S, sdiag)
-V = VH.T.conj()  # if you know you have real values only you can leave out the .conj()
-plt.imshow(V)
-plt.imshow(S)
-plt.show()
-
 V[D<delta]
