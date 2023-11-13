@@ -62,7 +62,6 @@ data.Size = data.Size.str.strip()
 data.Composite = data.Composite.str.strip()
 # Replace the XRF
 data.columns = [c.replace(' XRF','') for c in data.columns]
-data.columns
 data.to_csv(r'reference\compiled_assays.csv', index=False)
 
 batch2 = pd.read_csv('reference\Batch2_XRD_Assay_From_BBWi.csv')
@@ -148,10 +147,32 @@ data['CompositeID'] = data.BHID.str.strip()+' '+data.Composite.str.strip()+' '+d
 
 both = pd.merge(qxrd, data,on=['CompositeID'],how='left')
 
+billet_assay = pd.read_csv(r'reference\billet_assay.csv',low_memory=False)
+billet_xrd = pd.read_csv(r'reference\billet_xrd.csv',low_memory=False)
+billet = pd.merge( billet_xrd,billet_assay)
+billet.rename(columns={'Spinel group - Magnetite':'Spinel group','Calcite group':'Calcite group - Siderite','Hematite':'Hematite group','Calcite group - Calcite':'Calcite group'},inplace=True)
+billet['Type'] = 'BILLET'
+billet['Product'] = 'BILLET'
+billet['Mn'] = billet['MnO']*0.7745
+billet.drop(columns=['MnO'],inplace=True)
+
+billet['BHID_x'] = billet.Sample.map(lambda x: x.split('-')[0])
+billet.columns = [c.replace(' XRF','') for c in billet.columns]
+billet.rename(columns=loi_map, inplace=True)
+both = pd.concat([both, billet])
+plt.plot(billet['Spinel group'],pd.to_numeric(billet['Fe3O4'],errors='coerce'),'.')
+plt.plot(billet['K-Feldspar'],pd.to_numeric(billet['K2O'],errors='coerce'),'.')
+plt.show()
+
+
+plt.plot(both['Spinel group'],pd.to_numeric(both['Fe3O4'],errors='coerce'),'.')
+plt.plot(billet['K-Feldspar'],pd.to_numeric(billet['K2O'],errors='coerce'),'.')
+plt.show()
+
 keep_columns = [c for c in both.columns if not c.find('_y')>0]
 both = both[keep_columns]
 both.columns = [c.replace('_x','') for c in both.columns]
-both.to_csv(r'reference/BV_XRD_Assay_Merge.csv', index=False)
+both.to_csv(r'reference/BV_XRD_Assay_Merge_3.csv', index=False)
 both['PROJECT'] = both.BHID.map(lambda x: x[0:3])
 from sklearn.linear_model import RANSACRegressor
 coef = []
