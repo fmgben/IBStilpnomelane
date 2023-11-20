@@ -1,26 +1,6 @@
-import pandas
-fe = 55.845
-sio2 = 60.0843
-al2o3 = 101.9612
-mn = 54.938
-cao = 56.0774
-p = 30.973
-s = 32.065
-mgo = 40.3044
-mg = 24.305
-k2o = 94.196
-na2o = 61.97894
-bao = 153.326
+import pandas as pd
 
-magnetite = 231.5326
-apatite = 502.3012
-ankerite = 215.9194
-siderite = 122.503
-stilpnomelane = 1100.185
-chlorite = 468.2073
-kfeldspar = 278.3315
-albite = 262.223
-quartz = 60.0843
+
 
 
 def normative_v1(dataframe):
@@ -28,11 +8,37 @@ def normative_v1(dataframe):
     Code from Nuer no changes to the control flow or the code have been made apart from wrapping the 
     code into a function and adding some very minor formatting of input data 
     '''
+
+    # molecular weights 
+    # assay molecular weights
+    fe = 55.845
+    sio2 = 60.0843
+    al2o3 = 101.9612
+    mn = 54.938
+    cao = 56.0774
+    p = 30.973
+    s = 32.065
+    mgo = 40.3044
+    mg = 24.305
+    k2o = 94.196
+    na2o = 61.97894
+    bao = 153.326
+    # mineral molecular weights
+    magnetite = 231.5326
+    apatite = 502.3012
+    ankerite = 215.9194
+    siderite = 122.503
+    stilpnomelane = 1100.185
+    chlorite = 468.2073
+    kfeldspar = 278.3315
+    albite = 262.223
+    quartz = 60.0843
+
     df_joined = dataframe.copy()
 
-    df_joined = [c.lower() for c in dataframe.columns]
+    df_joined.columns = [c.lower() for c in dataframe.columns]
 
-    assay_columns = ['fe', 'sio2','al2o3','mn','cao','p','s','mgo','k2o','na2o']
+    assay_columns = ['fe', 'sio2','al2o3','mn','cao','p','s','mgo','k2o','na2o','fe3o4']
 
     df_joined = df_joined[assay_columns].copy()
 
@@ -100,20 +106,20 @@ def normative_v1(dataframe):
     df_joined['kfeldspar_mass'] = df_joined['kfeldspar_moles'] * kfeldspar
     df_joined['albite_mass'] = df_joined['albite_moles'] * albite
     df_joined['quartz_mass'] = df_joined['quartz_moles'] * quartz
-    df_joined['magnetite_mass'] = 0 # df_joined['magnetite_moles'] * magnetite
+    df_joined['magnetite_mass'] = df_joined['fe3o4']
 
     df_joined['total_mass'] = df_joined[['apatite_mass', 'ankerite_mass', 'siderite_mass', 'stilpnomelane_mass', 'chlorite_mass', 'kfeldspar_mass', 'albite_mass', 'quartz_mass', 'magnetite_mass']].sum(axis=1)
 
-    df_joined['apatite_mass_pct'] = df_joined['apatite_mass'] / df_joined['total_mass'] * 100
-    df_joined['ankerite_mass_pct'] = df_joined['ankerite_mass'] / df_joined['total_mass'] * 100
-    df_joined['siderite_mass_pct'] = df_joined['siderite_mass'] / df_joined['total_mass'] * 100
-    df_joined['stilpnomelane_mass_pct'] = df_joined['stilpnomelane_mass'] / df_joined['total_mass'] * 100
-    df_joined['chlorite_mass_pct'] = df_joined['chlorite_mass'] / df_joined['total_mass'] * 100
-    df_joined['kfeldspar_mass_pct'] = df_joined['kfeldspar_mass'] / df_joined['total_mass'] * 100
-    df_joined['albite_mass_pct'] = df_joined['albite_mass'] / df_joined['total_mass'] * 100
-    df_joined['quartz_mass_pct'] = df_joined['quartz_mass'] / df_joined['total_mass'] * 100
-    df_joined['magnetite_mass_pct'] = df_joined['magnetite_mass'] / df_joined['total_mass'] * 100
-    outminerals = ['apatite_mass_pct', 'ankerite_mass_pct', 'siderite_mass_pct', 'stilpnomelane_mass_pct', 'chlorite_mass_pct', 'kfeldspar_mass_pct', 'albite_mass_pct', 'quartz_mass_pct', 'magnetite_mass_pct']
+    df_joined['apatite'] = df_joined['apatite_mass'] / df_joined['total_mass'] * 100
+    df_joined['ankerite'] = df_joined['ankerite_mass'] / df_joined['total_mass'] * 100
+    df_joined['siderite'] = df_joined['siderite_mass'] / df_joined['total_mass'] * 100
+    df_joined['stilpnomelane'] = df_joined['stilpnomelane_mass'] / df_joined['total_mass'] * 100
+    df_joined['chlorite'] = df_joined['chlorite_mass'] / df_joined['total_mass'] * 100
+    df_joined['kfeldspar'] = df_joined['kfeldspar_mass'] / df_joined['total_mass'] * 100
+    df_joined['albite'] = df_joined['albite_mass'] / df_joined['total_mass'] * 100
+    df_joined['quartz'] = df_joined['quartz_mass'] / df_joined['total_mass'] * 100
+    df_joined['magnetite'] = df_joined['magnetite_mass'] / df_joined['total_mass'] * 100
+    outminerals = ['apatite', 'ankerite', 'siderite', 'stilpnomelane', 'chlorite', 'kfeldspar', 'albite', 'quartz', 'magnetite']
     output = df_joined[outminerals].copy()
 
     return output

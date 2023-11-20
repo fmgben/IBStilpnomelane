@@ -90,11 +90,16 @@ def ox_factor(x):
     factor = mass_fracts[key[0]]
     return x,key[0], factor
 
-def read_reference_minerals(path_reference:Union[str, Path]):
+def read_reference_minerals(path_reference:Union[str, Path,pd.DataFrame])->list[pd.DataFrame]:
     '''
     reads the reference minerals and converts the equations to a dense matrix of weights
     '''
-    minerals = pd.read_csv(path_reference,engine='python')
+    minerals:pd.DataFrame
+    if isinstance(path_reference, pd.DataFrame):
+        minerals = path_reference.copy()
+    else:
+        minerals = pd.read_csv(path_reference,engine='python')
+
     loi_decomposition = [i for i in minerals.columns.to_list() if i.startswith('loi')]
 
     minerals['substance'] = ''
