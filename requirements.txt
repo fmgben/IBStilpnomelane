@@ -1,8 +1,8 @@
 pandas
 numpy
-jax
-jaxopt
 scikit-learn
 pyodbc
 chempy
 matplotlib
+snowflake-connector-python
+tqdm
