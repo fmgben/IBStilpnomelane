@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "ibstilpnomelane"
 version = "0.1.0"
-description = ""
+description = "creates a normative mineralogy from assays"
 authors = ["Ben Chi <benjamin.chi@fmgl.com.au>"]
 readme = "README.md"
 
@@ -11,7 +11,7 @@ numpy = "*"
 pandas = "*"
 scikit-learn = "*"
 pyodbc = "*"
-chempy = "*'
+chempy = "*"
 [tool.poetry.group.dev.dependencies]
 chempy = "^0.8.3"
 matplotlib = "^3.8.2"
