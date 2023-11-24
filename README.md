@@ -10,3 +10,4 @@ Deployment is with pip
 
 Definition of minerals is by passing a chemical formula and the code will convert to elemental concentratations.
 
+installation is `pip git+https://github.com/fmgben/IBStilpnomelane.git`
